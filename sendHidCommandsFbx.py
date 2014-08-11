@@ -23,7 +23,35 @@ class MyListener(object):
             prop = info.getProperties()
 
 
+COMMANDS = { 0 : 'RUDP_CMD_NOOP',
+			 1 : 'RUDP_CMD_CLOSE',
+    	 	 2 : 'RUDP_CMD_CONN_REQ',
+    	 	 3 : 'RUDP_CMD_CONN_RSP',
+    	 	 4 : 'RUDP_CMD_PING',
+    	 	 5 : 'RUDP_CMD_PONG',
+    	 	 11 : 'RUDP_CMD_APP'
+    	 			 }
+OPTS = { 1 : 'ACK',
+	     2 : 'RELIABLE',
+    	 4 : 'RETRANSMITTED' }
+     	
 
+
+def parseRudpPacket(packet):
+	
+	
+
+	#command = int(packet[0:5])
+     	
+    	 			
+    		
+     	
+	print "recieved :" +packet
+	print "command :" + packet[0:2] + COMMANDS[int(packet[0:2])]
+	print "opt :" + packet[2:4] + OPTS[int(packet[2:4])]
+	#print "data (hid?) :"+ data[5:]
+	print "lookds like a device id [" + packet[4:8]+ ":" + packet [8:12] + "]"
+	print "report id : " + packet[12:16]
 
 
 
@@ -50,6 +78,12 @@ if __name__ == '__main__':
     sock.setblocking(0)
     
     while True:
+    	
+    	
+    	
+    	
+    	
+    	
         input = raw_input("input an hex packet:")
     	#hexArray = re.findall('..',input.replace(' ','').replace(':',''))
      	hexString = input.replace(' ','').replace(':','')
@@ -57,14 +91,19 @@ if __name__ == '__main__':
     	#   chrVal= chr(int(hex, 16))
     	#   hexString = hexString + chrVal  
     	
- 
+    	parseRudpPacket(hexString)
+    	
     	print "sent :" + hexString
+    	
     
      	sock.send(hexString.decode('hex'))
         #02010000bd980000d8aec240
     	time.sleep(1)
         try:
             received = sock.recv(512)
+            data= repr(received.encode("hex"))
+            parseRudpPacket(data[1:])
+            
         except socket.error:
             continue
     	#received = sock.recv(1024)
@@ -85,29 +124,7 @@ if __name__ == '__main__':
 #===============================================================================
     	
     	
-     	data= repr(received.encode("hex"))
-     	command = int(data[1:5])
-     	commands = { 0 : 'RUDP_CMD_NOOP',
-					 1 : 'RUDP_CMD_CLOSE',
-    	 			 2 : 'RUDP_CMD_CONN_REQ',
-    	 			 3 : 'RUDP_CMD_CONN_RSP',
-    	 			 4 : 'RUDP_CMD_PING',
-    	 			 5 : 'RUDP_CMD_PONG',
-    	 			 11 : 'RUDP_CMD_APP'
-    	 			 }
-     	opts = { 1 : 'ACK',
-				 2 : 'RELIABLE',
-    	 		 4 : 'RETRANSMITTED' }
      	
-    	 			
-    		
-     	
-     	print "recieved :" +data
-     	print "command :" + data[1:3] + commands[int(data[1:3])]
-     	print "opt :" + data[3:5] + opts[int(data[3:5])]
-     	#print "data (hid?) :"+ data[5:]
-     	print "lookds like a device id :" + data[5:9]+ ":" + data [9:13]
-     	print "report id : " + data[13:17]
      	
      	
      	
