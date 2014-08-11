@@ -1,3 +1,17 @@
+FOILS or is an api that has been implemented on the french provider media player.
+
+it allows HID like communication, so keyboards, mices, remote controls etc...
+
+The protocol is described here :
+http://dev.freebox.fr/sdk/foils_hid/#_Protocol
+
+This script's goal is just to send and recieve commands, to test and understand the protocol.
+
+More info on the API is available here : 
+http://dev.freebox.fr/sdk/
+
+Installation :
+
 First, install Python 2.7
 
 Open a command prompt :
