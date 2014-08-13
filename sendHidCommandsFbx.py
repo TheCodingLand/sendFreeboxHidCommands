@@ -3,6 +3,7 @@ import re
 import socket
 from zeroconf import raw_input, ServiceBrowser, Zeroconf
 import time
+import binascii
 import struct
 servers = []
 	
@@ -23,7 +24,9 @@ class MyListener(object):
             prop = info.getProperties()
 
 
-FOILS_STATES = { 0 : 'FOILS_HID_DEVICE_NEW', # client to server
+
+
+FOILS_COMMANDS = { 0 : 'FOILS_HID_DEVICE_NEW', # client to server
     			 1 : 'FOILS_HID_DEVICE_DROPPED', # client to server
 	       		 2 : 'FOILS_HID_DEVICE_CREATED', # server to client
     	      	 3 : 'FOILS_HID_DEVICE_CLOSE', # server to client
@@ -33,38 +36,113 @@ FOILS_STATES = { 0 : 'FOILS_HID_DEVICE_NEW', # client to server
      	 	     7 : 'FOILS_HID_RELEASE', # server to client
     	 	 	 8 : 'FOILS_HID_FEATURE_SOLLICIT' } # server to client
 
-
-
 COMMANDS = { 0 : 'RUDP_CMD_NOOP',
 			 1 : 'RUDP_CMD_CLOSE',
     	 	 2 : 'RUDP_CMD_CONN_REQ',
     	 	 3 : 'RUDP_CMD_CONN_RSP',
     	 	 4 : 'RUDP_CMD_PING',
-    	 	 5 : 'RUDP_CMD_PONG',
-    	 	 11 : 'RUDP_CMD_APP'
-    	 			 }
-OPTS = { 1 : 'ACK',
-	     2 : 'RELIABLE',
-    	 4 : 'RETRANSMITTED' }
+    	 	 5 : 'RUDP_CMD_PONG' }
+
+
+def interpretCommand(value):
+	if value[0] >= 16:
+		print value[0]
+		return 'RUDP_CMD_APP'
+	else:
+		return COMMANDS[value[0]]
+	 
+
      	
+FLAG = { 1 : 'ACK',
+	     2 : 'RELIABLE',
+	     3 : 'ACK and RELIABLE',
+    	 4 : 'RETRANSMITTED', 
+    	 5 : 'RETRANSMITTED And ACK',
+    	 7 : 'RELIABLE AND RETRANSMITTED' ,
+    	 8 : 'UNRELIABLE',
+    	 9 : 'UNRELIABLE And ACK',
+    	 11 : 'UNRELIABLE AND RETRNASMITTED',
+    	 }
+
+class FoilsProtocolCheat(object):
+	def __init__(self):
+	
+		self.devicename = "MonscriptDeLaMortRudpFoilsWTF"
+		self.deviceSerial = "JustCauseILikeDaTAInFIelds1337"
+		self.deviceVersion = 0x00
+
+    #self.remoteDescriptor = structDescriptor.pack()
+
+def parseFoilsDeviceNew(packet):
+	    deviceName = packet[0:128]
+	    print "deviceName" + str(deviceName)
+	    deviceSerial = packet[128:192]
+	    print "deviceSerial" + str(deviceSerial)
+	    reserved = int(packet[192:196], 16)
+	    deviceVersion =int(packet[196:198], 16)
+	    print "deviceVersion" + str(deviceVersion)
+	    descriptorBlobOffset = int(packet[200:204], 16)
+	    print "deviceBlobOffset" + str(descriptorBlobOffset)
+	    descriptorBlobSize = int(packet[204:208], 16)
+	    print "deviceBlobSize" + str(descriptorBlobSize)
+	    descriptorPhysicalOffset = int(packet[208:212], 16)
+	    descriptorPhysicalSize = int(packet[212:216], 16)
+	    descriptorStringOffset = int(packet[216:220], 16)
+	    descriptorStringSize = int(packet[220:224], 16)
+	    print "Device Report Descriptor : %s" % packet[descriptorBlobOffset*2:descriptorBlobOffset*2+descriptorBlobSize*2 ]
+
 
 
 def parseRudpPacket(packet):
-	
-	
 
 	#command = int(packet[0:5])
      	
-    	 			
-    		
-     	
-	print "recieved :" +packet
-	print "command :" + packet[0:2] + COMMANDS[int(packet[0:2])]
-	print "opt :" + packet[2:4] + OPTS[int(packet[2:4])]
-	#print "data (hid?) :"+ data[5:]
-	print "lookds like a device id [" + packet[4:8]+ ":" + packet [8:12] + "]"
-	print "report id : " + packet[12:16]
+	print "data :" +packet
+	print "command :" + packet[0:2] + ' ' + interpretCommand([int(packet[0:2], 16)])
+	print repr(binascii.unhexlify(packet[2:4]))
+	
+	print "FLAG : " + FLAG[int(packet[2:4],16)]
+	packet[4:6]
+	headerLgt = int(packet[2:4], 16)
+	ACKRELIABLE= packet[4:8]
+	RELIABLESEQ = packet[8:12]
+	UNRSEQ = packet[12:16]
+	print "ACKRELIABLE :"+ ACKRELIABLE
+	print "RELIABLESEQ :" + RELIABLESEQ
+	print "UNRSEQ :" + UNRSEQ  
+	parseFoilsHeader(packet[16:])
 
+			 
+def parseFoilsHeader(packet):
+	deviceID = packet[0:8]
+	report = packet[8:16]
+	if len(packet) ==8:
+		print "Handshake"
+	else:
+		try:
+			report = int(report, 16) 
+			parseFoilsDeviceNew(packet[16:])
+		except:
+			print "no FOILS DATA"
+		
+		#===========================================================================
+	# print "opt :" + packet[2:4] + OPTS[int(packet[2:4])]
+	# 	#print "data (hid?) :"+ data[5:]
+	# print "looks like a device id [" + packet[4:8]+ ":" + packet [8:12] + "]"
+	# print "report id : " + packet[12:16]
+	#===========================================================================
+#===============================================================================
+#     
+# def parseFoilsPacket(packet):
+#     print "data :" +packet
+#     print "command :" + packet[0:2] + COMMANDS[int(packet[0:2])]
+#     print "opt :" + packet[2:4] + OPTS[int(packet[2:4])]
+#     #print "data (hid?) :"+ data[5:]
+#     print "unknown data:" + packet[4:8]
+#     print "device id : [" + packet [8:12] + "]"
+#     print "report id : " + packet[12:16]
+#===============================================================================
+    #print "Foils command :" + FOILS_COMMANDS[int(packet[16:20])]
 
 
 if __name__ == '__main__':
