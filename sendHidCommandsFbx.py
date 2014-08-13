@@ -53,7 +53,9 @@ def interpretCommand(value):
 	 
 
      	
-FLAG = { 1 : 'ACK',
+FLAG = { 0: 'None',
+         
+         1 : 'ACK',
 	     2 : 'RELIABLE',
 	     3 : 'ACK and RELIABLE',
     	 4 : 'RETRANSMITTED', 
@@ -68,12 +70,22 @@ class FoilsProtocolCheat(object):
 	def __init__(self):
 	
 		self.devicename = "MonscriptDeLaMortRudpFoilsWTF"
-		self.deviceSerial = "JustCauseILikeDaTAInFIelds1337"
-		self.deviceVersion = 0x00
+		self.devicename = "74656C65636F6D6D616E6465207363726970742066726565626F7800000000000000000000000000000000000000000000000000000000000000000000000000"
+		self.deviceSerial="JustCauseILikeDaTAInFIelds1337"
+		self.deviceSerial= "00"*32
+		self.reserved = "00"
+		self.deviceVersion= "02"
+		self.descriptorBlobOffset = "70" 
+		self.descriptorBlobSize = "5b"
+		self.descriptorPhysicalOffset = "cB" 
+		self.descriptorPhysicalSize = "00"
+		descriptorStringOffset = "cB"
+		descriptorStringSize= "00"
+		self.deviceDesciptor = "050C0901A1010902A10205091901290A1501250A750495018100C0050C098609E015FF250175029502814609E2093009340960096409830981150125077504950181000980A1020509190129031501250375028100C015028103C0"
 
-    #self.remoteDescriptor = structDescriptor.pack()
 
-def parseFoilsDeviceNew(packet):
+
+def parseFoilsDeviceNew(packet):#to reverse with a set structured in a class 
 	    deviceName = packet[0:128]
 	    print "deviceName" + str(deviceName)
 	    deviceSerial = packet[128:192]
@@ -92,6 +104,15 @@ def parseFoilsDeviceNew(packet):
 	    print "Device Report Descriptor : %s" % packet[descriptorBlobOffset*2:descriptorBlobOffset*2+descriptorBlobSize*2 ]
 
 
+class rudpSession():
+	def init(self):
+		self.ackSent = 0
+		self.ackRecieved = 0
+		self.queue = []
+	def send(self, data):
+		send(data)
+		self.ackSent = self.ackSent+1
+  	
 
 def parseRudpPacket(packet):
 
@@ -109,7 +130,8 @@ def parseRudpPacket(packet):
 	UNRSEQ = packet[12:16]
 	print "ACKRELIABLE :"+ ACKRELIABLE
 	print "RELIABLESEQ :" + RELIABLESEQ
-	print "UNRSEQ :" + UNRSEQ  
+	print "UNRSEQ :" + UNRSEQ
+	print "data : " + packet[16:]  
 	parseFoilsHeader(packet[16:])
 
 			 
@@ -124,25 +146,6 @@ def parseFoilsHeader(packet):
 			parseFoilsDeviceNew(packet[16:])
 		except:
 			print "no FOILS DATA"
-		
-		#===========================================================================
-	# print "opt :" + packet[2:4] + OPTS[int(packet[2:4])]
-	# 	#print "data (hid?) :"+ data[5:]
-	# print "looks like a device id [" + packet[4:8]+ ":" + packet [8:12] + "]"
-	# print "report id : " + packet[12:16]
-	#===========================================================================
-#===============================================================================
-#     
-# def parseFoilsPacket(packet):
-#     print "data :" +packet
-#     print "command :" + packet[0:2] + COMMANDS[int(packet[0:2])]
-#     print "opt :" + packet[2:4] + OPTS[int(packet[2:4])]
-#     #print "data (hid?) :"+ data[5:]
-#     print "unknown data:" + packet[4:8]
-#     print "device id : [" + packet [8:12] + "]"
-#     print "report id : " + packet[12:16]
-#===============================================================================
-    #print "Foils command :" + FOILS_COMMANDS[int(packet[16:20])]
 
 
 if __name__ == '__main__':
@@ -174,7 +177,14 @@ if __name__ == '__main__':
     	
     	
     	
-        input = raw_input("input an hex packet:")
+        input = raw_input("input an hex packet of type 'handshake', and then 'descriptor':")
+        if input == 'descriptor':
+            input = "10010000bd990000000000020000000054c3a96cc3a9636f6d6d616e6465204672656554c3a96c65630000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000070005000c0000000c00000050c0901a10185019501751019002a8c021500268c0280c005010906a1018502050795017508150026ff00050719002aff0080c005010a8000a1018503750195041a81002a84008102750195048101c00000000000000000"
+        if input == 'handshake':
+        	input = "02010000da59000000000000"
+        	
+
+        	
     	#hexArray = re.findall('..',input.replace(' ','').replace(':',''))
      	hexString = input.replace(' ','').replace(':','')
       	#for hex in hexArray:
