@@ -1,29 +1,13 @@
 import re
 
 import socket
-from zeroconf import raw_input, ServiceBrowser, Zeroconf
+import detectserver
 import time
 import binascii
 import struct
 servers = []
 from constantsrudp import *
-	
-class Server(object):
-	def __init__(self, address, port, name):
-	    self.address = address
-	    self.port = port
-	    self.name = name
-		
-	
-class MyListener(object):
-
-    def addService(self, zeroconf, type, name):
-        info = zeroconf.getServiceInfo(type, name)
-        if info:
-            servers.append(Server(socket.inet_ntoa(info.getAddress()),
-                                          info.getPort(),info.getServer() ))
-            prop = info.getProperties()
-
+import rudpconnexion as	rudp
 
 
 
@@ -122,26 +106,21 @@ def parseFoilsHeader(packet):
 
 
 if __name__ == '__main__':
-    zeroconf = Zeroconf()
-    print("Browsing services...")
-    listener = MyListener()
-    browser = ServiceBrowser(zeroconf, "_hid._udp.local.", listener)
-    freebox=False
-    while freebox==False: 
-   
-    	for server in servers:
-    		if 'Freebox' in server.name:
-    			freebox=server
-    zeroconf.close()
+    freebox = detectserver.detect()
     
     print freebox.name
     print freebox.address
     print freebox.port
     
     print "connecting :" 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect((freebox.address,int(freebox.port)))
-    sock.setblocking(0)
+    rudpConnexion= rudp.client(freebox.address,int(freebox.port))
+    rudpConnexion.connect()
+    #sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #sock.connect((freebox.address,int(freebox.port)))
+    #sock.setblocking(0)
+    
+    
+    
     
     while True:
     	
