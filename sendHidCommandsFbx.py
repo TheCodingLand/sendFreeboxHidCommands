@@ -123,67 +123,27 @@ if __name__ == '__main__':
     
     
     while True:
-    	
-    	
-    	
-    	
-    	
-    	
         input = raw_input("input an hex packet of type 'handshake', and then 'descriptor':")
         if input == 'descriptor':
-            input = "10010000bd990000000000020000000054c3a96cc3a9636f6d6d616e6465204672656554c3a96c65630000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000070005000c0000000c00000050c0901a10185019501751019002a8c021500268c0280c005010906a1018502050795017508150026ff00050719002aff0080c005010a8000a1018503750195041a81002a84008102750195048101c00000000000000000"
+            input = testdescriptor
         if input == 'handshake':
-        	input = "02010000da59000000000000"
-        	
-
-        	
-    	#hexArray = re.findall('..',input.replace(' ','').replace(':',''))
-     	hexString = input.replace(' ','').replace(':','')
-      	#for hex in hexArray:
-    	#   chrVal= chr(int(hex, 16))
-    	#   hexString = hexString + chrVal  
-    	
+        	input = testhandshake
+     	hexString = input.replace(' ','').replace(':','') #allow all type of copy and paste
+      	
     	parseRudpPacket(hexString)
     	print "sent :" + hexString
     	print "----------------------------------------------------------------"
-    	
-    	
-    	
     
-     	sock.send(hexString.decode('hex'))
-        #02010000bd980000d8aec240
+     	rudpConnexion.skt.send(hexString.decode('hex'))
     	time.sleep(1)
         try:
-            received = sock.recv(512)
+            received = rudpConnexion.skt.recv(512)
             data= repr(received.encode("hex"))
             parseRudpPacket(data[1:])
             
         except socket.error:
             continue
-    	#received = sock.recv(1024)
-    	
-    	
-#===============================================================================
-# Low-level protocol is peer-to-peer. As UDP is not connected, one of the two involved peers must send a packet first. Any of the two can do it. This packet is expected to be containing a RUDP_CMD_CONN_REQ command with reliable sequence number to a random value.. This packet should be reliable, i.e. imply retransmits in the sender's code.
-# Peer is expected to answer with an unreliable packet containing both an ACK and a RUDP_CMD_CONN_RSP packet. Its sequence number must be random as well. If the response packet is lost in transit, handshake will fail and must be started over. This is intended.
-# After these two packets are exchanged, connection is established. Each peer takes the sequence number it received in first packet as granted. This is only true for first packet.
-# 
-# On an established connection, 3 main types of packets may transit:
-# 
-# - Ping/Pong packets
-# 
-# - Noop packets
-# 
-# - Data packets
-#===============================================================================
-    	
-    	
-     	
-     	
-     	
-     	
-    
-    
+
     sock.close()
     
 
